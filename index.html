@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Note-Taking App</title>
+  <style>
+    /* Styles here (same as before) */
+  </style>
+</head>
+<body>
+  <div id="app">
+    <h1>Note-Taking App</h1>
+    <div id="auth-section">
+      <input type="text" id="username" placeholder="Username">
+      <input type="password" id="password" placeholder="Password">
+      <button onclick="signup()">Sign Up</button>
+      <button onclick="login()">Log In</button>
+    </div>
+    <div id="notes-section" style="display: none;">
+      <h2>Your Notes</h2>
+      <form id="note-form">
+        <input type="text" id="note-title" placeholder="Note Title">
+        <input type="text" id="note-body" placeholder="Note Body">
+        <button type="submit">Add Note</button>
+      </form>
+      <div id="notes-container"></div>
+    </div>
+  </div>
+  <script>
+    let currentUser = null;
+
+    async function signup() {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      const response = await fetch("http://localhost:5000/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      alert((await response.json()).message);
+    }
+
+    async function login() {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      const response = await fetch("http://localhost:5000/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      const result = await response.json();
+      if (response.ok) {
+        currentUser = username;
+        loadNotes();
+      } else {
+        alert(result.message);
+      }
+    }
+
+    async function loadNotes() {
+      const response = await fetch("http://localhost:5000/notes", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: currentUser }),
+      });
+      const result = await response.json();
+      const notesContainer = document.getElementById("notes-container");
+      notesContainer.innerHTML = result.notes
+        .map(note => `<div><h3>${note.title}</h3><p>${note.body}</p></div>`)
+        .join("");
+    }
+
+    // More functions for adding, editing, deleting notes go here
+  </script>
+</body>
+</html>
